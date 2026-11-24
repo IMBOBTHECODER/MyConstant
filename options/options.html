@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="options.css" />
+    <title>MyConstant — Settings</title>
+  </head>
+  <body>
+    <main>
+      <h1 data-i18n>Settings</h1>
+
+      <!-- Each control's `name` is a key in DEFAULT_SETTINGS
+           (shared/settings.js). options.js loads and saves any control
+           named that way, so adding a setting needs no new JS here. -->
+      <form id="settings">
+        <label class="field">
+          <input type="checkbox" name="enabled" />
+          <span data-i18n>Enable the extension</span>
+        </label>
+
+        <!-- Number base for built-in constants. Handled by options.js
+             (not by `name`, because of the "Other" choice). -->
+        <div class="field">
+          <label for="base-preset" data-i18n>Number base</label>
+          <select id="base-preset">
+            <option value="2" data-i18n>Binary (2)</option>
+            <option value="8" data-i18n>Octal (8)</option>
+            <option value="10" data-i18n>Decimal (10)</option>
+            <option value="16" data-i18n>Hexadecimal (16)</option>
+            <option value="other" data-i18n>Other…</option>
+          </select>
+          <input type="number" id="base-custom" min="2" max="36" step="1" aria-label="Base (2–36)" data-i18n-attr="aria-label" hidden />
+          <!-- Dropdown listing the characters used as digits in this base;
+               its label and contents are filled in by options.js -->
+          <details id="base-digits" class="dropdown">
+            <summary id="base-digits-label"></summary>
+            <div id="base-digits-list" class="dropdown-panel digits"></div>
+          </details>
+        </div>
+        <p class="muted note" data-i18n>Applies to the built-in constants. Digits above 9 are written as the letters A–Z.</p>
+        <p id="base-example" class="example"></p>
+      </form>
+
+      <!-- Puts every setting back to its default; the user's own constants
+           and pins are kept. Needs a second click to confirm. -->
+      <div class="reset">
+        <button type="button" id="reset" data-i18n>Reset to defaults</button>
+        <p class="muted note" data-i18n>Resets language, decimal places, notation, number base, shortcut and the on/off switch. Your own constants and pins are kept.</p>
+      </div>
+
+      <!-- Backup: the user's constants, pins, library selection and
+           settings, saved to / read from a JSON file by options.js -->
+      <h2 data-i18n>Backup</h2>
+      <div class="backup">
+        <button type="button" id="export" data-i18n>Export to a file</button>
+        <button type="button" id="import" data-i18n>Import from a file</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden />
+      </div>
+      <p class="muted note backup-note" data-i18n>Saves your constants, pins, library selection and settings to a file. Importing a file replaces what you have now.</p>
+
+      <p id="status" class="muted" role="status"></p>
+
+      <!-- Extension name, version, ID, browser and language; filled in by
+           info.js -->
+      <h2 data-i18n>About</h2>
+      <dl id="info" class="info"></dl>
+    </main>
+
+    <!-- Classic scripts: define the MyConstantI18n and MyConstantFormat globals -->
+    <script src="../shared/i18n.js"></script>
+    <script src="../shared/format.js"></script>
+    <!-- options.js imports info.js -->
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

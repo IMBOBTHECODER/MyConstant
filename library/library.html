@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="library.css" />
+    <title>Constant library</title>
+  </head>
+  <body>
+    <!-- The library: every built-in constant, with a switch for whether it
+         appears in the popup. Opened from "More constants…" in the popup. -->
+    <header>
+      <h1 data-i18n>Constant library</h1>
+      <p class="muted" data-i18n>Choose which built-in constants appear in the popup. Click a constant to add or remove it.</p>
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="Search the library" aria-label="Search the library" data-i18n-attr="placeholder aria-label" autocomplete="off" />
+        <span id="summary" class="muted" role="status"></span>
+      </div>
+      <!-- Presets: ready-made selections from shared/constants.js, in two
+           groups (Essentials: Light / Medium / All, Subjects, Everything); built by
+           library.js. Choosing one replaces the current selection. -->
+      <div id="presets" class="toolbar"></div>
+      <p id="no-matches" class="muted" data-i18n hidden>No constants match.</p>
+      <p id="close-matches" class="muted" data-i18n hidden>No exact match. Showing the closest spellings.</p>
+    </header>
+
+    <!-- One section per category in shared/constants.js, built by library.js -->
+    <main id="categories"></main>
+
+    <!-- Classic scripts: define the MyConstantI18n, MyConstantLatex,
+         MyConstantFormat and MyConstantData globals used by library.js -->
+    <script src="../shared/i18n.js"></script>
+    <script src="../shared/latex.js"></script>
+    <script src="../shared/format.js"></script>
+    <script src="../shared/constants.js"></script>
+    <script type="module" src="library.js"></script>
+  </body>
+</html>

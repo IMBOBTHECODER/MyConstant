@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "MyConstant",
+  "version": "0.0.1",
+  "description": "A Manifest V3 extension foundation.",
+
+  "icons": {
+    "16": "assets/app/icon16.png",
+    "48": "assets/app/icon48.png",
+    "128": "assets/app/icon128.png"
+  },
+
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "MyConstant",
+    "default_icon": {
+      "16": "assets/app/icon16.png",
+      "48": "assets/app/icon48.png"
+    }
+  },
+
+  "background": {
+    "scripts": ["background/service-worker.js"],
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "shared/i18n.js",
+        "shared/latex.js",
+        "shared/format.js",
+        "shared/constants.js",
+        "shared/usage.js",
+        "content/content-script.js"
+      ],
+      "css": ["content/content-styles.css"],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start"
+    }
+  ],
+
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "myconstant@example.com",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+
+  "permissions": ["storage", "contextMenus", "scripting"],
+
+  "host_permissions": ["<all_urls>"]
+}

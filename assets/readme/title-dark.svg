@@ -1,0 +1,9 @@
+<!-- README title, for dark backgrounds. Text in the reader's own monospace
+     font (an image cannot load a web font on GitHub). Not used by the
+     extension itself. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="96" viewBox="0 0 420 96" role="img" aria-label="MyConstant">
+  <text x="210" y="66" text-anchor="middle" fill="#e6edf3"
+        font-family="'Cascadia Code', Consolas, 'SF Mono', Menlo, 'DejaVu Sans Mono', monospace"
+        font-size="60" font-weight="700">MyConstant</text>
+  <line x1="60" y1="86" x2="360" y2="86" stroke="#e6edf3" stroke-width="1" opacity="0.4"/>
+</svg>

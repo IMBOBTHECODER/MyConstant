@@ -1,0 +1,27 @@
+# Files git should leave out of the repository.
+
+# Notes for AI coding assistants; local only
+CLAUDE.md
+.claude/
+
+# Operating system clutter
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editor settings and swap files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Packaged extension (the zip or xpi uploaded to the stores) and signing keys
+*.zip
+*.xpi
+*.crx
+*.pem
+web-ext-artifacts/
+
+# Not used by this project, but tools sometimes create them
+node_modules/
+*.log

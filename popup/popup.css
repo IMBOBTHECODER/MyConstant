@@ -1,0 +1,463 @@
+/* Popup styling. The popup sizes itself to its content. */
+
+:root {
+  color-scheme: light dark;
+}
+
+/* Icons
+   -----------------------------------------
+   Every icon is an SVG file in assets/icons/, used as a mask: the file
+   supplies the shape, `background-color` supplies the colour (the text
+   colour by default, so icons follow light/dark mode). To restyle an
+   icon, replace its file. To add one, add a rule to the list below. */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  background-color: currentColor;
+  -webkit-mask: center / contain no-repeat;
+  mask: center / contain no-repeat;
+}
+
+.icon-settings {
+  -webkit-mask-image: url('../assets/icons/settings.svg');
+  mask-image: url('../assets/icons/settings.svg');
+}
+
+.icon-pin {
+  -webkit-mask-image: url('../assets/icons/pin.svg');
+  mask-image: url('../assets/icons/pin.svg');
+}
+
+.icon-x {
+  -webkit-mask-image: url('../assets/icons/x.svg');
+  mask-image: url('../assets/icons/x.svg');
+}
+
+.icon-pencil {
+  -webkit-mask-image: url('../assets/icons/pencil.svg');
+  mask-image: url('../assets/icons/pencil.svg');
+}
+
+body {
+  min-width: 260px;
+  margin: 0;
+  font: 13px/1.4 system-ui, sans-serif;
+}
+
+main {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+/* `display: grid` above would otherwise override the hidden attribute. */
+main[hidden] {
+  display: none;
+}
+
+button.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  opacity: 0.65;
+}
+
+button.link:hover {
+  opacity: 1;
+}
+
+/* Icon-only button (the settings cog), pushed to the right of the header. */
+.icon-button {
+  display: grid;
+  place-items: center;
+  align-self: center;
+  margin-left: auto;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.icon-button:hover {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.icon-button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* The last item in a header (cog, Back link) sits at the far right. */
+header > :last-child {
+  margin-left: auto;
+}
+
+h1 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.muted {
+  opacity: 0.65;
+}
+
+section {
+  display: grid;
+  gap: 8px;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
+.empty {
+  margin: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* A user constant: copy button with a small remove button in its corner. */
+.chip {
+  position: relative;
+  display: grid;
+}
+
+.chip > button:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip .remove {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  font-size: 10px;
+  line-height: 0;
+  opacity: 0;
+}
+
+/* Edit: a round badge on the bottom-right corner of the user's own
+   constants, shown on hover like the remove button above it. */
+.chip .edit {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, CanvasText 45%, Canvas);
+  border-radius: 50%;
+  background: Canvas;
+  color: CanvasText;
+  font-size: 9px;
+  line-height: 0;
+  opacity: 0;
+}
+
+.chip .edit:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+/* Centre the icon inside the corner buttons. */
+.chip .remove,
+.chip .edit,
+.chip .pin {
+  display: grid;
+  place-items: center;
+}
+
+.chip:hover .remove,
+.chip .remove:focus-visible,
+.chip:hover .edit,
+.chip .edit:focus-visible {
+  opacity: 1;
+}
+
+/* The constant whose name and value are in the form below. */
+.chip.is-editing > button:first-child {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+/* Pin toggle: a round badge on the top-left corner of every constant.
+   - not pinned: faint outline badge, so it can be found without hovering
+   - hovering the constant: full strength; hovering the badge: turns blue
+   - pinned: solid blue badge with a white pin, always fully visible */
+.chip .pin {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, CanvasText 45%, Canvas);
+  border-radius: 50%;
+  background: Canvas;
+  color: CanvasText;
+  font-size: 11px;
+  line-height: 0;
+  opacity: 0.45;
+  transition: opacity 0.1s, transform 0.1s;
+}
+
+.chip:hover .pin,
+.chip .pin:focus-visible {
+  opacity: 1;
+}
+
+.chip .pin:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  transform: scale(1.15);
+}
+
+.chip .pin.is-pinned,
+.chip .pin.is-pinned:hover {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+  opacity: 1;
+}
+
+/* Keep the hovered constant's badges above its neighbours. */
+.chip:hover {
+  z-index: 1;
+}
+
+.number {
+  width: 56px;
+  padding: 2px 6px;
+  font: inherit;
+}
+
+.select {
+  padding: 2px 4px;
+  font: inherit;
+}
+
+.shortcut-row {
+  cursor: default;
+}
+
+/* The shortcut itself: a key-cap style button; click it to record a new one. */
+.shortcut-key {
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, CanvasText 30%, Canvas);
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font-size: 12px;
+}
+
+.shortcut-key:hover,
+.shortcut-key.is-recording {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.hint {
+  margin: -6px 0 0;
+  font-size: 12px;
+}
+
+.hint:empty {
+  display: none;
+}
+
+.add-form {
+  display: grid;
+  gap: 6px;
+}
+
+.add-form input {
+  padding: 6px 8px;
+  font: inherit;
+}
+
+.add-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.add-actions button {
+  flex: 1;
+}
+
+.search {
+  padding: 6px 8px;
+  font: inherit;
+}
+
+/* Way into the library, under the built-in sections: a full-width block
+   with a dashed outline, so it reads as "add more here" rather than as
+   one more constant. */
+.library-link {
+  padding: 10px 8px;
+  border: 1px dashed color-mix(in srgb, CanvasText 55%, Canvas);
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.library-link:hover,
+.library-link.is-highlighted {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+/* While a search has matches waiting in the library. */
+.library-link.is-highlighted {
+  border-style: solid;
+  background: color-mix(in srgb, #2563eb 12%, Canvas);
+}
+
+/* "Files changed, reload" notice at the top of the popup. */
+.stale {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid #d97706;
+}
+
+.stale p {
+  margin: 0;
+}
+
+.stale button {
+  padding: 6px 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Coefficient box: a "×" and a text field, under the search box. */
+.coefficient {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.coefficient input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  font: inherit;
+}
+
+.coefficient input[aria-invalid='true'] {
+  outline: 2px solid #dc2626;
+}
+
+.builtin-sections {
+  display: grid;
+  gap: 12px;
+}
+
+.builtin-sections:empty {
+  display: none;
+}
+
+.constants {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+/* Categories marked `wide` in shared/constants.js: room for long labels. */
+.constants.is-wide {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* Constant labels drawn as maths (see shared/latex.js). */
+math {
+  font-size: 16px;
+}
+
+.constants button {
+  padding: 10px 4px;
+  font-size: 15px;
+}
+
+/* Sticks to the bottom edge, so the "Copied ..." message is visible
+   however far the list is scrolled. */
+.copy-status {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 0 -14px -14px;
+  padding: 6px 14px;
+  background: Canvas;
+  text-align: center;
+  opacity: 1;
+  color: color-mix(in srgb, CanvasText 65%, Canvas);
+}
+
+.copy-status:empty {
+  display: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.status {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+}
+
+.status dt {
+  opacity: 0.65;
+}
+
+.status dd {
+  margin: 0;
+  text-align: right;
+}
+
+button {
+  padding: 6px 10px;
+  font: inherit;
+  cursor: pointer;
+}

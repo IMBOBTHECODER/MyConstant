@@ -1,0 +1,7 @@
+/* Styles injected into the host page alongside the content script.
+   Scope every rule under the marker attribute the content script sets on
+   <html>, so rules only apply while the extension is enabled and are
+   unlikely to clash with the page's own styles:
+
+   html[data-my-extension] .my-extension-thing { ... }
+*/

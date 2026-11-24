@@ -1,0 +1,173 @@
+/* Options page styling. */
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 2rem auto;
+  padding: 0 1rem;
+  max-width: 640px;
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+form {
+  display: grid;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.field select,
+.field input[type='number'] {
+  padding: 3px 6px;
+  font: inherit;
+}
+
+.field input[type='number'] {
+  width: 64px;
+}
+
+.field [hidden] {
+  display: none;
+}
+
+.field button {
+  padding: 3px 10px;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Dropdown: a button-like label with a panel that opens underneath it,
+   floating over the page instead of pushing content down. */
+.dropdown {
+  position: relative;
+}
+
+.dropdown summary {
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, CanvasText 35%, Canvas);
+  border-radius: 4px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.dropdown summary::-webkit-details-marker {
+  display: none;
+}
+
+.dropdown summary::after {
+  content: ' ▾';
+}
+
+.dropdown[open] summary::after {
+  content: ' ▴';
+}
+
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 10;
+  width: max-content;
+  max-width: min(320px, 80vw);
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, CanvasText 25%, Canvas);
+  border-radius: 8px;
+  background: Canvas;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  cursor: default;
+}
+
+/* The characters used as digits in the chosen base. */
+.digits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.digits code {
+  min-width: 1.4em;
+  padding: 1px 0;
+  border: 1px solid color-mix(in srgb, CanvasText 25%, Canvas);
+  border-radius: 4px;
+  font-family: ui-monospace, Consolas, monospace;
+  text-align: center;
+}
+
+.note {
+  min-height: 0;
+  margin: -6px 0 0;
+  font-size: 13px;
+}
+
+.example {
+  margin: 0;
+  font-family: ui-monospace, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.reset {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+.backup {
+  display: flex;
+  gap: 8px;
+}
+
+.backup-note {
+  margin: 8px 0 0;
+}
+
+.backup button,
+.reset button {
+  padding: 5px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.reset button.is-armed {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.reset .note {
+  margin: 0;
+}
+
+h2 {
+  margin: 2rem 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+}
+
+.info dt {
+  opacity: 0.65;
+}
+
+.info dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  user-select: all; /* one click selects the whole value for copying */
+}
+
+.muted {
+  min-height: 1.5em;
+  opacity: 0.65;
+}

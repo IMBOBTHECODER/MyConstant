@@ -1,0 +1,177 @@
+/* Library page styling. Deliberately the same bare look as the popup:
+   the browser's own buttons, in a grid, under small capital headings. */
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0 auto;
+  padding: 0 14px 14px;
+  max-width: 880px;
+  font: 13px/1.4 system-ui, sans-serif;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+h1 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.muted {
+  margin: 0;
+  opacity: 0.65;
+}
+
+/* Title, search, the "44 of 196 included" count and the presets.
+   Stays in view while the list scrolls. */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  gap: 8px;
+  padding: 14px 0 10px;
+  background: Canvas;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.toolbar input {
+  flex: 1 1 220px;
+  padding: 6px 8px;
+  font: inherit;
+}
+
+/* One group of presets: its name, then its buttons. */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The preset that matches the current selection. */
+.presets button[aria-pressed='true'] {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+main {
+  display: grid;
+  gap: 14px;
+}
+
+section {
+  display: grid;
+  gap: 8px;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+}
+
+/* Pushes "Add all" / "Remove all" to the right. */
+.section-head .count {
+  margin-right: auto;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px;
+}
+
+/* One constant: a plain button. The symbol on top, its name and value
+   underneath, and a badge in the corner saying whether it is in the popup.
+   Constants left out are drawn fainter. */
+.card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px 6px 8px;
+  font: inherit;
+  opacity: 0.6;
+}
+
+.card:hover,
+.card.is-included {
+  opacity: 1;
+}
+
+.card-symbol {
+  font-size: 15px;
+}
+
+.card-symbol math {
+  font-size: 16px;
+}
+
+.card-symbol,
+.card-name,
+.card-value {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-text {
+  display: grid;
+  justify-items: center;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 12px;
+}
+
+.card-value {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  opacity: 0.65;
+}
+
+/* Corner badge, the same shape as the pin badge in the popup:
+   outlined "+" when left out, solid blue "✓" when included. */
+.card-state {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid color-mix(in srgb, CanvasText 45%, Canvas);
+  border-radius: 50%;
+  background: Canvas;
+  color: CanvasText;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.card.is-included .card-state {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+}

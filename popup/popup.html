@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>MyConstant</title>
+  </head>
+  <body>
+    <!-- Main view -->
+    <main id="view-main">
+      <header>
+        <h1 id="name">MyConstant</h1>
+        <span id="version" class="muted"></span>
+        <!-- Icon file: assets/icons/settings.svg -->
+        <button type="button" id="open-settings" class="icon-button" title="Settings" aria-label="Settings" data-i18n-attr="title aria-label">
+          <span class="icon icon-settings"></span>
+        </button>
+      </header>
+
+      <!-- Shown when the extension's files on disk are newer than the ones
+           the browser loaded (see shared/fingerprint.js): until it is
+           reloaded, the quick picker on web pages is still the old one. -->
+      <div id="stale" class="stale" hidden>
+        <p data-i18n>The extension's files have changed. Reload it, or the quick picker on web pages stays on the old version.</p>
+        <button type="button" id="reload-extension" data-i18n>Reload the extension now</button>
+      </div>
+
+      <!-- Search: filters every section by symbol, name or value -->
+      <input id="search" class="search" type="search" placeholder="Search constants" aria-label="Search constants" data-i18n-attr="placeholder aria-label" autocomplete="off" />
+      <!-- Coefficient: with a number here, clicking a constant copies that
+           many times its value (2 × pi, 1/2 × e, ...). Not saved. -->
+      <label class="coefficient" title="Type a number, then click a constant to copy it multiplied by that number." data-i18n-attr="title">
+        <span aria-hidden="true">×</span>
+        <input id="coefficient" type="text" inputmode="decimal" placeholder="Coefficient (e.g. 2 or 1/2)" aria-label="Coefficient (e.g. 2 or 1/2)" data-i18n-attr="placeholder aria-label" autocomplete="off" />
+      </label>
+      <p id="no-matches" class="muted empty" data-i18n hidden>No constants match.</p>
+      <p id="close-matches" class="muted empty" data-i18n hidden>No exact match. Showing the closest spellings.</p>
+
+      <!-- Section 1: pinned constants, from either section below -->
+      <section id="section-pinned">
+        <div class="section-head">
+          <h2 data-i18n>Pinned</h2>
+        </div>
+        <div id="pinned-constants" class="constants"></div>
+        <p id="pinned-empty" class="muted empty" data-i18n="Hover a constant and press {icon} to pin it here.">Hover a constant and press <span class="icon icon-pin"></span> to pin it here.</p>
+      </section>
+
+      <!-- Section 2: the user's own constants (saved in settings) -->
+      <section id="section-mine">
+        <div class="section-head">
+          <h2 data-i18n>My constants</h2>
+          <button type="button" id="add-constant" class="link" data-i18n>+ Add</button>
+        </div>
+        <div id="my-constants" class="constants"></div>
+        <p id="my-constants-empty" class="muted empty" data-i18n>None yet. Press “+ Add” to create one.</p>
+
+        <form id="add-form" class="add-form" hidden>
+          <input id="add-symbol" type="text" placeholder="Name (e.g. g, or LaTeX: m_e)" data-i18n-attr="placeholder" maxlength="12" required />
+          <input id="add-value" type="text" placeholder="Value (e.g. 9.80665)" data-i18n-attr="placeholder" maxlength="100" required />
+          <div class="add-actions">
+            <button type="submit" data-i18n>Save</button>
+            <button type="button" id="add-cancel" data-i18n>Cancel</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Built-in constants: one section per category in constants.js
+           (only the ones included, see the library), built by popup.js -->
+      <div id="builtin-sections" class="builtin-sections"></div>
+
+      <!-- Opens the library page (library/), where the built-in constants
+           shown above are chosen. Its text is set by popup.js. -->
+      <button type="button" id="open-library" class="library-link">+ More constants…</button>
+
+      <p id="copy-status" class="copy-status" role="status"></p>
+    </main>
+
+    <!-- Settings view (inside the popup). Everyday settings live here;
+         "Advanced settings" opens the full options page. -->
+    <main id="view-settings" hidden>
+      <header>
+        <h1 data-i18n>Settings</h1>
+        <button type="button" id="close-settings" class="link" data-i18n>← Back</button>
+      </header>
+
+      <!-- Interface language; the options are filled in by popup.js from
+           the list in shared/i18n.js -->
+      <label class="row">
+        <span data-i18n>Language</span>
+        <select id="language" class="select"></select>
+      </label>
+
+      <label class="row">
+        <span data-i18n>Enabled</span>
+        <input type="checkbox" id="enabled" />
+      </label>
+
+      <!-- How many decimal places built-in constants are copied with -->
+      <label class="row">
+        <span data-i18n>Decimal places</span>
+        <input type="number" id="precision" class="number" min="0" max="30" step="1" />
+      </label>
+
+      <!-- How built-in constants are written -->
+      <label class="row">
+        <span data-i18n>Notation</span>
+        <select id="notation" class="select">
+          <option value="normal" data-i18n>Normal (3.1415)</option>
+          <option value="scientific" data-i18n>Scientific (3.1415e0)</option>
+        </select>
+      </label>
+
+      <!-- Keyboard shortcut that opens the quick picker (the small window
+           at the mouse pointer, see content/content-script.js). Click the
+           key to record a new one. -->
+      <div class="row shortcut-row">
+        <span data-i18n>Quick picker</span>
+        <button type="button" id="shortcut" class="shortcut-key" title="Click, then press the new shortcut" data-i18n-attr="title">…</button>
+      </div>
+      <p id="shortcut-hint" class="muted hint" role="status"></p>
+      <!-- The other way in, for pages where the shortcut is taken -->
+      <p class="muted hint" data-i18n>Shortcut not working on a page? Right-click the page and choose “MyConstant: open quick picker”.</p>
+
+      <!-- Whether the quick picker stays open after a constant is clicked -->
+      <label class="row">
+        <span data-i18n>Keep quick picker open after copying</span>
+        <input type="checkbox" id="keep-open" />
+      </label>
+
+      <!-- Connection status: shows the popup can reach the background
+           worker and the content script in the current tab. -->
+      <dl class="status">
+        <dt data-i18n>Background</dt>
+        <dd id="background-status">…</dd>
+        <dt data-i18n>This page</dt>
+        <dd id="page-status">…</dd>
+      </dl>
+
+      <button type="button" id="open-advanced" data-i18n>Advanced settings</button>
+    </main>
+
+    <!-- Classic scripts: define the MyConstantI18n, MyConstantLatex,
+         MyConstantFormat, MyConstantData and MyConstantUsage globals used by
+         popup.js -->
+    <script src="../shared/i18n.js"></script>
+    <script src="../shared/latex.js"></script>
+    <script src="../shared/format.js"></script>
+    <script src="../shared/constants.js"></script>
+    <script src="../shared/usage.js"></script>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
