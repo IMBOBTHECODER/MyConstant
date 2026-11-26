@@ -40,6 +40,11 @@
   mask-image: url('../assets/icons/pencil.svg');
 }
 
+.icon-trash-2 {
+  -webkit-mask-image: url('../assets/icons/trash-2.svg');
+  mask-image: url('../assets/icons/trash-2.svg');
+}
+
 body {
   min-width: 260px;
   margin: 0;
@@ -122,6 +127,51 @@ section {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+}
+
+/* The bin button in the "My constants" heading: pushed to the right, just
+   before "+ Add", with the number of constants in the bin beside it. */
+.bin-link {
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.bin-link span + span:not(:empty) {
+  margin-left: 3px;
+}
+
+/* Bin view: one removed constant per row. */
+.bin-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bin-list li {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 2px 6px;
+}
+
+.bin-list .bin-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* "Delete now" after its first press, waiting for the second. */
+.bin-list .is-armed {
+  outline: 2px solid #dc2626;
+  outline-offset: -2px;
+}
+
+.bin-list .bin-left {
+  grid-column: 1 / -1;
+  font-size: 12px;
 }
 
 h2 {

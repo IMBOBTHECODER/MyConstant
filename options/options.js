@@ -67,7 +67,7 @@ let wantsCustomBase = false;
 // --- Reset to defaults ------------------------------------------------------
 // Everything in DEFAULT_SETTINGS except the user's own data.
 // (the library selection has its own restore button, on the library page)
-const KEPT_ON_RESET = ['myConstants', 'pinned', 'added', 'hidden'];
+const KEPT_ON_RESET = ['myConstants', 'bin', 'pinned', 'added', 'hidden'];
 const resetButton = document.getElementById('reset');
 let resetArmed = false;
 let resetTimer;
@@ -125,21 +125,33 @@ document.getElementById('export').addEventListener('click', async () => {
   flash(t('Backup saved.'), 4000);
 });
 
+// The user's own names and values have no length limit of their own; this
+// only keeps a damaged file from being read in. What fits is decided by
+// the browser's storage limits.
+const LONG = 100_000;
+
 /** One checked, cleaned-up value per setting; undefined = leave it alone. */
 const CLEAN = {
   enabled: (v) => (typeof v === 'boolean' ? v : undefined),
   keepOpen: (v) => (typeof v === 'boolean' ? v : undefined),
+  pickerAction: (v) => (['both', 'insert', 'copy'].includes(v) ? v : undefined),
   myConstants: (v) =>
     Array.isArray(v)
       ? v
-          .filter((c) => c && isText(c.symbol, 100) && isText(c.value, 100))
+          .filter((c) => c && isText(c.symbol, LONG) && isText(c.value, LONG))
           .slice(0, 300)
           .map((c) => ({ symbol: c.symbol, value: c.value }))
+      : undefined,
+  bin: (v) =>
+    Array.isArray(v)
+      ? v
+          .filter((c) => Array.isArray(c) && isText(c[0], LONG) && isText(c[1], LONG) && Number.isFinite(c[2]))
+          .map((c) => [c[0], c[1], c[2]])
       : undefined,
   pinned: (v) =>
     Array.isArray(v)
       ? v
-          .filter((c) => c && isText(c.symbol, 100) && isText(c.value, 100))
+          .filter((c) => c && isText(c.symbol, LONG) && isText(c.value, LONG))
           .slice(0, 300)
           .map((c) => ({
             symbol: c.symbol,

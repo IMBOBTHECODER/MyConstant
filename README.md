@@ -38,7 +38,6 @@
 - [Using it](#using-it)
 - [Compatibility](#compatibility)
 - [Privacy and permissions](#privacy-and-permissions)
-- [Before publishing](#before-publishing)
 - [Licence](#licence)
 - [Contact](#contact)
 - [Reference](#reference)
@@ -51,7 +50,8 @@
   the popup shows (one by one, or with a preset such as Physics or
   Chemistry).
 - **Your own constants**: add, edit and remove them; names can be written
-  in LaTeX (`m_e`, `\frac{h}{2\pi}`).
+  in LaTeX (`m_e`, `\frac{h}{2\pi}`). Removed ones go to a bin for 30 days, where they can
+  be restored or deleted straight away.
 - **Pinned** constants stay at the top of the popup.
 - **Quick picker**: a small window at the mouse pointer on any page, opened
   with a keyboard shortcut (Alt+C by default, Control+C on a Mac) or from
@@ -94,7 +94,8 @@ a constant to add it to the popup or take it out, or pick a preset:
 |            | Everything (all 196)                                       |
 
 **Settings.** In the popup: language, on/off, decimal places, notation, the
-shortcut, and whether the picker stays open. When recording a shortcut,
+shortcut, whether the picker stays open, and what a click in it does
+(insert and copy, insert only, or copy only). When recording a shortcut,
 combinations the browser reserves are refused, and well-known ones (Ctrl+C,
 Ctrl+V, ...) need a second press to confirm. **Advanced settings** has the
 number base, reset to defaults, and backup (export to / import from a
@@ -132,14 +133,6 @@ suggestions) stays on the device.
 On pages, the extension only listens for the shortcut and writes the
 constant you clicked into the field you were in. It does not read page
 content or the clipboard.
-
-## Before publishing
-
-- Write a real `description` in both manifests (it still says "A Manifest
-  V3 extension foundation.")
-- Replace the placeholder icons in `assets/app/`
-- Firefox: replace the placeholder add-on ID
-  (`browser_specific_settings.gecko.id`)
 
 ## Licence
 

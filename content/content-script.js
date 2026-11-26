@@ -16,6 +16,7 @@
   const DEFAULT_SETTINGS = {
     enabled: true,
     myConstants: [],
+    bin: [],
     pinned: [],
     precision: 8,
     notation: 'normal',
@@ -23,6 +24,7 @@
     language: 'auto',
     shortcut: 'default',
     keepOpen: true,
+    pickerAction: 'both',
     added: [],
     hidden: [],
   };
@@ -308,17 +310,20 @@
         // may have been filled in since.
         const { text: value, scaled } = shown(constant);
         const symbol = scaled ? `${coefficient.text} × ${constant.symbol}` : constant.symbol;
-        // Type it into the field the user is in, and copy it as well, so it
-        // is on the clipboard either way.
-        const inserted = await typeIntoPage(value);
-        const copied = await copyText(value);
+        // Type it into the field the user is in, copy it, or both (so it
+        // is on the clipboard either way): the pickerAction setting.
+        const action = settings.pickerAction;
+        const inserted = action !== 'copy' && (await typeIntoPage(value));
+        const copied = action !== 'insert' && (await copyText(value));
         const ok = inserted || copied;
         if (ok) MyConstantUsage.record(constant);
         status.textContent = inserted
           ? t('Inserted {symbol} = {value}', { symbol, value })
           : copied
             ? t('Copied {symbol} = {value}', { symbol, value })
-            : t('Could not copy');
+            : action === 'insert'
+              ? t('No text field to insert into')
+              : t('Could not copy');
         if (!picker) return;
         clearTimeout(picker.closeTimer);
         if (settings.keepOpen) {
@@ -373,6 +378,29 @@
     return null;
   }
 
+  // Google Docs draws its pages itself; what is typed goes to an empty
+  // editable element in a hidden frame, which Docs only listens to. Text put
+  // into that element with insertText never reaches the document.
+  let ownEditor = false;
+  try {
+    ownEditor = Boolean(window.frameElement?.classList.contains('docs-texteventtarget-iframe'));
+  } catch {} // a frame from another site may not look at its own element
+
+  /**
+   * Gives `text` to the page as a paste, without touching the clipboard.
+   * Counts as done only if the page took the paste for itself.
+   */
+  function pasteInto(node, text) {
+    try {
+      const data = new DataTransfer();
+      data.setData('text/plain', text);
+      const paste = new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true });
+      return !node.dispatchEvent(paste);
+    } catch {
+      return false;
+    }
+  }
+
   /** Types `text` at the remembered cursor, replacing any selection there. */
   function insertText(target, text) {
     const { node, start, end, range } = target;
@@ -390,9 +418,14 @@
     // insertText behaves like real typing: the page is told about it (so
     // sites built with React and the like notice) and Ctrl+Z undoes it.
     let ok = false;
-    try {
-      ok = document.execCommand('insertText', false, text);
-    } catch {}
+    if (!ownEditor) {
+      try {
+        ok = document.execCommand('insertText', false, text);
+      } catch {}
+    }
+    // Editors that draw the text themselves ignore or refuse the command
+    // but do handle a paste, so hand them the text as one.
+    if (!ok && node.isContentEditable) ok = pasteInto(node, text);
     if (!ok && !node.isContentEditable) {
       // Older way, for browsers where the command does not work in fields.
       try {

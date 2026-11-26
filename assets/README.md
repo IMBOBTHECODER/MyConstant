@@ -31,8 +31,9 @@ SVG files, wired up at the "Icons" block near the top of `popup/popup.css`.
 | `pin.svg`      | Pin / unpin a constant           |
 | `x.svg`        | Remove one of your own constants |
 | `pencil.svg`   | Edit one of your own constants   |
+| `trash-2.svg`  | Opens the bin (removed constants) |
 
-All four are unmodified icons from Lucide (https://lucide.dev, ISC
+All five are unmodified icons from Lucide (https://lucide.dev, ISC
 license), saved under their Lucide names.
 
 How they are drawn: each SVG is used as a *mask*, and the colour comes

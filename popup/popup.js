@@ -12,8 +12,19 @@ import {
   shortcutConflict,
   shortcutFromEvent,
 } from '../shared/shortcut.js';
-import { MSG, sendToBackground, sendToTab } from '../shared/messages.js';
-import { getSettings, setSettings, onSettingsChanged } from '../shared/settings.js';
+import { MSG, sendToTab } from '../shared/messages.js';
+import {
+  setSettings,
+  onSettingsChanged,
+  emptyExpiredBin,
+  liveBin,
+  packBin,
+  binEntry,
+  binDaysLeft,
+  binFullness,
+  fitsInBin,
+  BIN_NEARLY_FULL,
+} from '../shared/settings.js';
 import { filesChangedSinceLoad } from '../shared/fingerprint.js';
 
 /* global MyConstantI18n, MyConstantLatex, MyConstantFormat, MyConstantData,
@@ -34,6 +45,9 @@ let BUILTIN = [];
 let inLibrary = [];
 
 let myConstants = [];
+// Removed constants still within their 30 days: [{ symbol, value, removedAt }]
+// (see liveBin in shared/settings.js)
+let bin = [];
 let pinned = [];
 let precision = 8;
 let notation = 'normal';
@@ -61,12 +75,13 @@ function render(settings) {
     // Messages already on screen are in the old language: redo or clear them.
     $('copy-status').textContent = '';
     $('shortcut-hint').textContent = '';
-    checkBackground();
   }
 
   $('enabled').checked = settings.enabled;
   $('keep-open').checked = settings.keepOpen !== false;
+  $('picker-action').value = ['insert', 'copy'].includes(settings.pickerAction) ? settings.pickerAction : 'both';
   myConstants = Array.isArray(settings.myConstants) ? settings.myConstants : [];
+  bin = liveBin(settings.bin);
   pinned = Array.isArray(settings.pinned) ? settings.pinned : [];
   precision = clampPrecision(settings.precision);
   base = clampBase(settings.base);
@@ -83,6 +98,7 @@ function render(settings) {
   shortcut = resolveShortcut(settings.shortcut);
   renderShortcut();
   renderSections();
+  renderBin();
 }
 
 // A constant is identified by its symbol and (full-length) value together.
@@ -108,13 +124,115 @@ function togglePin(constant) {
 function removeMyConstant(index) {
   toggleAddForm(false); // an edit in progress would point at the wrong one
   const constant = myConstants[index];
+  // Into the bin, newest last. An identical one already there is replaced
+  // (its 30 days start again); the oldest go once it is full.
+  // One too large for the bin, even if it were empty, is deleted for good
+  // and the bin is left as it is.
+  const entry = binEntry(constant);
+  const nextBin = fitsInBin(entry) ? [...bin.filter((c) => !same(c, constant)), entry] : bin;
+  if (nextBin === bin) {
+    say('copy-status', t('Deleted {name} for good: it is too large for the bin', { name: shortName(constant) }), 6000);
+  } else {
+    const moved = t('Moved {name} to the bin', { name: shortName(constant) });
+    const full = binFullText(nextBin);
+    say('copy-status', full ? `${moved}. ${full}` : moved, full ? 6000 : 2500);
+  }
   return setSettings({
     myConstants: myConstants.filter((_, i) => i !== index),
+    bin: packBin(nextBin),
     // Unpin it too, unless an identical constant still exists.
     pinned: myConstants.some((c, i) => i !== index && same(c, constant))
       ? pinned
       : pinned.filter((p) => !same(p, constant)),
   });
+}
+
+// --- Bin ------------------------------------------------------------------
+/** A constant's name, cut short for use in a message. */
+const shortName = ({ symbol }) => (symbol.length > 24 ? `${symbol.slice(0, 24)}…` : symbol);
+
+/** Shows a short message in one of the status lines, then clears it. */
+const sayTimers = {};
+function say(id, text, ms = 2500) {
+  $(id).textContent = text;
+  clearTimeout(sayTimers[id]);
+  sayTimers[id] = setTimeout(() => ($(id).textContent = ''), ms);
+}
+
+/** The "nearly full" notice for a bin holding `entries`, or '' below 90%. */
+function binFullText(entries) {
+  const fullness = binFullness(entries);
+  if (fullness < BIN_NEARLY_FULL) return '';
+  return t('The bin is nearly full ({percent}%). The oldest constants in it will be deleted to make room.', {
+    percent: Math.floor(fullness * 100),
+  });
+}
+
+/** Puts a constant from the bin back among the user's own. */
+async function restoreFromBin(entry) {
+  try {
+    await setSettings({
+      bin: packBin(bin.filter((c) => c !== entry)),
+      myConstants: myConstants.some((c) => same(c, entry))
+        ? myConstants
+        : [...myConstants, { symbol: entry.symbol, value: entry.value }],
+    });
+    say('bin-status', t('Restored {name}', { name: shortName(entry) }));
+  } catch (err) {
+    say('bin-status', t('Could not save: {error}', { error: err.message }));
+  }
+}
+
+/** Deletes a constant in the bin for good, without waiting the 30 days. */
+const deleteFromBin = (entry) => setSettings({ bin: packBin(bin.filter((c) => c !== entry)) });
+
+/** Rebuilds the bin button's count and the list in the bin view. */
+function renderBin() {
+  const label = t('Bin ({count})', { count: bin.length });
+  $('open-bin').title = label;
+  $('open-bin').setAttribute('aria-label', label);
+  $('bin-count').textContent = bin.length ? String(bin.length) : '';
+  $('bin-empty').hidden = bin.length > 0;
+  $('bin-full').textContent = binFullText(bin);
+  $('bin-full').hidden = !$('bin-full').textContent;
+  $('bin-list').replaceChildren(
+    // Most recently removed first.
+    ...[...bin].reverse().map((entry) => {
+      const row = document.createElement('li');
+      const name = document.createElement('span');
+      name.className = 'bin-name';
+      name.append(MyConstantLatex.label(entry), ` = ${entry.value}`);
+      name.title = `${entry.symbol} = ${entry.value}`;
+      const restore = document.createElement('button');
+      restore.type = 'button';
+      restore.textContent = t('Restore');
+      restore.addEventListener('click', () => restoreFromBin(entry));
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = t('Delete now');
+      // It cannot be undone, so it takes two presses: the first turns the
+      // button into "Confirm delete" for a few seconds.
+      let armed = false;
+      let disarm;
+      remove.addEventListener('click', () => {
+        if (armed) return deleteFromBin(entry);
+        armed = true;
+        remove.textContent = t('Confirm delete');
+        remove.classList.add('is-armed');
+        clearTimeout(disarm);
+        disarm = setTimeout(() => {
+          armed = false;
+          remove.textContent = t('Delete now');
+          remove.classList.remove('is-armed');
+        }, 4000);
+      });
+      const left = document.createElement('span');
+      left.className = 'bin-left muted';
+      left.textContent = t('Days left: {days}', { days: binDaysLeft(entry) });
+      row.append(name, restore, remove, left);
+      return row;
+    })
+  );
 }
 
 /** Small corner button showing an icon from assets/icons (see popup.css). */
@@ -312,10 +430,11 @@ async function addConstant(event) {
   }
 }
 
-/** Switches the popup between its 'main' and 'settings' views. */
+/** Switches the popup between its 'main', 'settings' and 'bin' views. */
 function showView(name) {
   $('view-main').hidden = name !== 'main';
   $('view-settings').hidden = name !== 'settings';
+  $('view-bin').hidden = name !== 'bin';
 }
 
 // --- Quick picker shortcut ---------------------------------------------
@@ -386,15 +505,6 @@ async function onRecordKeydown(event) {
   setRecording(false, t('Saved. Works on web pages.'));
 }
 
-async function checkBackground() {
-  try {
-    const { version } = await sendToBackground(MSG.PING);
-    $('background-status').textContent = t('Connected (v{version})', { version });
-  } catch (err) {
-    $('background-status').textContent = t('Error: {error}', { error: err.message });
-  }
-}
-
 async function checkPage() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -435,7 +545,8 @@ async function init() {
   $('language').append(auto, ...MyConstantI18n.LANGUAGES.map((l) => new Option(l.name, l.code)));
   $('language').addEventListener('change', (e) => setSettings({ language: e.target.value }));
 
-  render(await getSettings());
+  // Reading the settings also deletes what has been in the bin for 30 days.
+  render(await emptyExpiredBin());
   onSettingsChanged((settings) => {
     render(settings);
     checkPage();
@@ -443,6 +554,7 @@ async function init() {
 
   $('enabled').addEventListener('change', (e) => setSettings({ enabled: e.target.checked }));
   $('keep-open').addEventListener('change', (e) => setSettings({ keepOpen: e.target.checked }));
+  $('picker-action').addEventListener('change', (e) => setSettings({ pickerAction: e.target.value }));
   $('precision').addEventListener('change', (e) => {
     const value = clampPrecision(e.target.valueAsNumber);
     e.target.value = value;
@@ -466,6 +578,8 @@ async function init() {
   $('open-library').addEventListener('click', openLibrary);
   $('open-settings').addEventListener('click', () => showView('settings'));
   $('close-settings').addEventListener('click', () => showView('main'));
+  $('open-bin').addEventListener('click', () => showView('bin'));
+  $('close-bin').addEventListener('click', () => showView('main'));
   $('open-advanced').addEventListener('click', () => chrome.runtime.openOptionsPage());
 
   $('shortcut').addEventListener('click', () =>
@@ -476,7 +590,6 @@ async function init() {
   );
   window.addEventListener('keydown', onRecordKeydown, true);
 
-  checkBackground();
   checkPage();
 
   // The popup is read from disk each time it opens, but the quick picker and

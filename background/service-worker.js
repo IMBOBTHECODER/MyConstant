@@ -10,7 +10,7 @@ import { MSG, handleMessages } from '../shared/messages.js';
 import '../shared/constants.js'; // classic script: defines globalThis.MyConstantData
 import '../shared/i18n.js'; // classic script: defines globalThis.MyConstantI18n
 
-import { DEFAULT_SETTINGS, getSettings, setSettings } from '../shared/settings.js';
+import { DEFAULT_SETTINGS, getSettings, setSettings, emptyExpiredBin } from '../shared/settings.js';
 import { rememberLoadedFiles } from '../shared/fingerprint.js';
 
 const { CATEGORIES } = globalThis.MyConstantData;
@@ -37,6 +37,11 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   // would not work in them until they were refreshed. Put a live one in.
   if (reason === 'install' || reason === 'update') injectIntoOpenTabs();
 });
+
+// The bin (removed constants, see shared/settings.js) is also cleared of
+// expired entries each time the popup opens; this covers people who never
+// open it.
+chrome.runtime.onStartup.addListener(() => emptyExpiredBin().catch(() => {}));
 
 // --- Content script injection -------------------------------------------------
 
@@ -125,7 +130,6 @@ async function migratePinned() {
 
 // Message routes. Add a type to MSG, then a handler here.
 handleMessages({
-  [MSG.PING]: () => ({ version: chrome.runtime.getManifest().version }),
   // A small frame asks for the picker in the main frame. Tell the main
   // frame which one asked, so it can send the chosen constant back there.
   [MSG.OPEN_IN_TOP]: async (_payload, sender) => {

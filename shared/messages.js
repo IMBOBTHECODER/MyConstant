@@ -7,7 +7,6 @@
 // Message types. The content script duplicates the ones it handles
 // (it cannot import modules) — keep the strings in sync.
 export const MSG = Object.freeze({
-  PING: 'ping', // -> background: { version }
   GET_PAGE_INFO: 'get-page-info', // -> content script: { title, url, enabled }
   // -> content script: { open }. Payload { reopen: true } opens it (again,
   // at the pointer) instead of closing one that is already open.

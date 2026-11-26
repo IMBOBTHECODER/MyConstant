@@ -1,6 +1,7 @@
 # Files git should leave out of the repository.
 
-# Notes for AI coding assistants; local only
+# Notes for AI coding assistants and myself; local only
+todo.md
 CLAUDE.md
 .claude/
 

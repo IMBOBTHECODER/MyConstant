@@ -50,14 +50,18 @@
       <section id="section-mine">
         <div class="section-head">
           <h2 data-i18n>My constants</h2>
+          <!-- Opens the bin view. Icon file: assets/icons/trash-2.svg.
+               Its title (with the number of constants in it) is set by
+               popup.js. -->
+          <button type="button" id="open-bin" class="link bin-link"><span class="icon icon-trash-2"></span><span id="bin-count"></span></button>
           <button type="button" id="add-constant" class="link" data-i18n>+ Add</button>
         </div>
         <div id="my-constants" class="constants"></div>
         <p id="my-constants-empty" class="muted empty" data-i18n>None yet. Press “+ Add” to create one.</p>
 
         <form id="add-form" class="add-form" hidden>
-          <input id="add-symbol" type="text" placeholder="Name (e.g. g, or LaTeX: m_e)" data-i18n-attr="placeholder" maxlength="12" required />
-          <input id="add-value" type="text" placeholder="Value (e.g. 9.80665)" data-i18n-attr="placeholder" maxlength="100" required />
+          <input id="add-symbol" type="text" placeholder="Name (e.g. g, or LaTeX: m_e)" data-i18n-attr="placeholder" required />
+          <input id="add-value" type="text" placeholder="Value (e.g. 9.80665)" data-i18n-attr="placeholder" required />
           <div class="add-actions">
             <button type="submit" data-i18n>Save</button>
             <button type="button" id="add-cancel" data-i18n>Cancel</button>
@@ -74,6 +78,22 @@
       <button type="button" id="open-library" class="library-link">+ More constants…</button>
 
       <p id="copy-status" class="copy-status" role="status"></p>
+    </main>
+
+    <!-- Bin view: the user's own constants they removed. Each stays for
+         30 days (BIN_DAYS in shared/settings.js) and can be put back or
+         deleted straight away. The list is built by popup.js. -->
+    <main id="view-bin" hidden>
+      <header>
+        <h1 data-i18n>Bin</h1>
+        <button type="button" id="close-bin" class="link" data-i18n>← Back</button>
+      </header>
+      <p class="muted hint" data-i18n>Removed constants are kept here for 30 days, then deleted for good.</p>
+      <p id="bin-empty" class="muted empty" data-i18n>The bin is empty.</p>
+      <!-- Shown from 90% full; the text is set by popup.js -->
+      <p id="bin-full" class="hint" role="status" hidden></p>
+      <ul id="bin-list" class="bin-list"></ul>
+      <p id="bin-status" class="copy-status" role="status"></p>
     </main>
 
     <!-- Settings view (inside the popup). Everyday settings live here;
@@ -128,11 +148,20 @@
         <input type="checkbox" id="keep-open" />
       </label>
 
-      <!-- Connection status: shows the popup can reach the background
-           worker and the content script in the current tab. -->
+      <!-- What a click in the quick picker does: type the constant into
+           the page's text field, copy it, or both -->
+      <label class="row">
+        <span data-i18n>When a constant is clicked in the quick picker</span>
+        <select id="picker-action" class="select">
+          <option value="both" data-i18n>Insert and copy</option>
+          <option value="insert" data-i18n>Insert only</option>
+          <option value="copy" data-i18n>Copy only</option>
+        </select>
+      </label>
+
+      <!-- Whether the quick picker can be used in the current tab (the
+           popup asks the content script there). -->
       <dl class="status">
-        <dt data-i18n>Background</dt>
-        <dd id="background-status">…</dd>
         <dt data-i18n>This page</dt>
         <dd id="page-status">…</dd>
       </dl>
